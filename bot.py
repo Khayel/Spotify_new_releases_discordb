@@ -79,8 +79,4 @@ def create_bot(spotify_api):
         send += "```"
         await ctx.send(send)
 
-    @bot.command()
-    async def delete(ctx)
-        
-
     bot.run('ODE5MzI3OTA2NzE0ODc3OTUy.YElAkw.UlunLmRovawVBe77brHWkbje6n0')
