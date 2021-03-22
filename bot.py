@@ -1,17 +1,16 @@
 import discord
 from discord.ext import commands
 import asyncio
-
-artist_list = []
-song_list = ['summer', 'let it be', 'run', 'sanctuary']
-client = discord.Client()
+import config
 
 
 def create_bot(spotify_api):
+    """Wrapper for discord bot."""
     bot = commands.Bot(command_prefix='-')
 
-    async def check_new():  # 819320412118581311
-
+    async def check_new():
+        """ Function that invokes check in Spotify API and database for new releases.
+        """
         embed = discord.Embed(
             title="New Release in Spotify!",
             color=0xff0000,
@@ -20,14 +19,6 @@ def create_bot(spotify_api):
         while True:
             new_releases = spotify_api.checkArtist()
             if new_releases != None:
-                # new_releases shoould have a channel ID?
-                # for channel in channels:
-                #     try:
-                #         await channel.send(embed=embed)
-                #         break
-                #     except:
-                #         print('unable to send in', channel, guild
-                # for list of new releases get the appropriate channel id to send it to  create embed then send
                 for new_release in new_releases:
                     general_channel = bot.get_channel(
                         int(new_release['channel_id']))
@@ -40,7 +31,7 @@ def create_bot(spotify_api):
                     embed.set_footer(
                         text=f"Released on {new_release['release_date']}")
                     await general_channel.send(embed=embed)
-            await asyncio.sleep(10)
+            await asyncio.sleep(3600)
 
     @ bot.event
     async def on_ready():
@@ -49,21 +40,15 @@ def create_bot(spotify_api):
         print(bot.user.id)
         print('------')
 
+        # schedule check for new releases when bot is logged in
         bot.loop.create_task(check_new())
 
     @ bot.command()
-    async def showlist(ctx):
-        """Adds two numbers together."""
-        await ctx.send(artist_list)
-
-    @ bot.command()
     async def add(ctx, artist):
-        print("DSADSSSSS)")
         status = spotify_api.new_artist(artist, str(ctx.channel.id))
         print(ctx.channel.id)
         if status:
             await ctx.send(f'Added {status} to watchlist')
-            # add here
         else:
             await ctx.send(f'Could not find artist {artist}')
 
@@ -79,4 +64,4 @@ def create_bot(spotify_api):
         send += "```"
         await ctx.send(send)
 
-    bot.run('ODE5MzI3OTA2NzE0ODc3OTUy.YElAkw.UlunLmRovawVBe77brHWkbje6n0')
+    bot.run(config.BOT_TOKEN)
