@@ -5,8 +5,7 @@ import base64
 import copy
 import datetime
 """
-Using client Credential flow authrization from Spotify API
-request toke
+Using client Credential flow authorization from Spotify API.
 """
 
 
@@ -31,6 +30,8 @@ class Spotify_API():
                               'Content-Type': 'application/json'}
 
     def refresh_token(self):
+        """ Grab a new authentication token.
+        """
         try:
             auth_str = '{}:{}'.format(self.c_id, self.c_secret)
             base64_auth = base64.b64encode(auth_str.encode()).decode()
@@ -50,7 +51,11 @@ class Spotify_API():
             pass
 
     def spotify_search(self, artist):
-        print("SEARCH CALLED")
+        """Make a call to Spotify API and seach for an artist.
+
+        Return artist JSON result. Used for auto-complete functionality.
+        """
+
         response = requests.get(
             "https://api.spotify.com/v1/search",
             headers=self.access_header,
@@ -87,18 +92,22 @@ class Spotify_API():
                                 params={
                                     'include_groups': 'album,single', 'market': 'US', 'limit': 50}
                                 ).json()
-        if create:  # creating artist so just return my initial count value
+        # creating an artist return initial count value
+        if create:
             return response['total']
-        else:  # this is foor detection of new track
-            # if tootal track is > than what is in database assume there is a new release and it is the first
+
+        # detection of new track
+        else:
+
+            # if total track is > than what is in database assume there is a new release
             if(response['total'] > curr_count):
-                # NEED TO SORT RELEASES BY RECENT
-
                 print("New release")
-
+                # sort results by date. Assumes < 50 new releases and that most recent releases is within the first 50 results returned by Spotify
                 result_list = self.sort_by_date(response['items'])
                 new_releases = []
                 item = {}
+
+                # only return response['total'] - curr_count results
                 for i in range(int(response['total']) - curr_count):
                     if result_list[i]['album_group'] == 'album':  # new Album
                         item = {
@@ -108,8 +117,6 @@ class Spotify_API():
                             'image': result_list[i]['images'][2]['url'],
                             'artist': result_list[i]['artists'][0]['name'],
                             'channel_id': channel_id
-
-
                         }
 
                     else:  # new Single
@@ -121,36 +128,19 @@ class Spotify_API():
                             'image': result_list[i]['images'][2]['url'],
                             'link': result_list[i]['external_urls']['spotify'],
                             'channel_id': channel_id
-
                         }
-                    new_releases.append(copy.deepcopy(item))
 
+                    new_releases.append(copy.deepcopy(item))
                 if new_releases == []:
                     return None
                 self.db.update_count(spotify_id, response['total'])
-                print(new_releases)
                 return new_releases
 
     def checkArtist(self):
         self.refresh_token()
         print('checking....')
-        """
-        For every artist in the artists list
-         - look at all albums f an artist
-GET https://api.spotify.com/v1/artists/{id}/albums
-id of artist,
-include_groups = album,single
-        limit = 50
 
-        to cover all albums if > 50
-        while number of results returns 50:
-            make another call with offset incrementing by 50 every iteration
-
-        count albums and singles? compare with previus count and return the first n items where n i the difference between the coounts
-        this is assuming api always resturns results in present to past order f reeleas
-
-        """
-        # for list of artist check tracks and count? counts are the same good
+        # for list of artist check tracks and total counts counts are the same good
         # check for updates
         items = self.db.get_id_count()
         results = []
@@ -166,11 +156,3 @@ include_groups = album,single
 
     def get_artists(self, channel_id):
         return self.db.get_artists(channel_id)
-
-
-if __name__ == "__main__":
-    # abstract awa and hide keys
-    api = Spotify_API(config.CLIENT_ID,
-                      config.CLIENT_SECRET, Database())
-    api.check_artist_count('1vCWHaC5f2uS3yhpwWbIA6', 2)
-    api.search('Brockhampton')

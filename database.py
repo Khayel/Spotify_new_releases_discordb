@@ -52,10 +52,3 @@ class Database():
             resultList.append(copy.deepcopy(dict))
         con.close()
         return resultList
-
-
-if __name__ == "__main__":
-    db = Database()
-    db.new_artist('3213', 'name', 32, 'ref', 'mychannel')
-    print(Database().select_query(
-        "SELECT * FROM Artists "))
