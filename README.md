@@ -1,7 +1,7 @@
 # Spotify_new_releases_discordb
 A discord bot that allows a server to add to a lists of artists. When an artist releases a song or album in Spotify, the bot will notify the channel that there has been a new release in spotify
 
-Test out the bot (here)[https://discord.com/api/oauth2/authorize?client_id=819327906714877952&permissions=2048&scope=bot]
+Test out the bot [here](https://discord.com/api/oauth2/authorize?client_id=819327906714877952&permissions=2048&scope=bot)
 Stack - Python, Discord.py, and SQlite database.
 
 Commands
